@@ -1,1 +1,0 @@
-﻿<%@ ServiceHost Language="C#" Debug="true" Service="APSIM.Builds.Service.BuildsClassic" CodeBehind="BuildsClassic.svc.cs" %>
