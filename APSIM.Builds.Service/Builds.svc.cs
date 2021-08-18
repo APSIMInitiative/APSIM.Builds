@@ -296,7 +296,7 @@ namespace APSIM.Builds.Service
             if (issueID <= 0)
                 throw new Exception("Cannot find issue number in pull request: " + pullRequestID);
 
-            return DateTime.Now.ToString("yyyy.MM.dd-HH:mm") + "," + issueID;
+            return DateTime.Now.ToString("yyyy.M.d-HH:mm") + "," + issueID;
         }
      
         /// <summary>Get the latest build.</summary>
