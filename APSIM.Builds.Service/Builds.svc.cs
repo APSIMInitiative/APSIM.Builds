@@ -319,7 +319,14 @@ namespace APSIM.Builds.Service
                             build.pullRequestID = (int)reader["PullRequestID"]; ;
                             build.issueNumber = (int)reader["IssueNumber"];
                             build.issueTitle = (string)reader["IssueTitle"];
-                            build.url = @"http://apsimdev.apsim.info/ApsimXFiles/ApsimSetup" + build.issueNumber + ".exe";
+                            string fileName;
+                            // ApsimX pull request #6713 will be the first "official"
+                            // .net core release.
+                            if (build.pullRequestID >= 6713)
+                                fileName = $"apsim-{build.issueNumber}.exe";
+                            else
+                                fileName = $"ApsimSetup{build.issueNumber}.exe";
+                            build.url = $@"http://apsimdev.apsim.info/ApsimXFiles/{fileName}";
                             return build;
                         }
                     }
