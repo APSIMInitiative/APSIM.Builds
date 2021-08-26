@@ -193,6 +193,7 @@ namespace APSIM.Builds.Service
             while (reader.Read())
             {
                 int buildIssueNumber = (int)reader["IssueNumber"];
+                int pullRequestID = (int)reader["PullRequestID"];
                 bool released = (bool)reader["Released"];
                 if (buildIssueNumber > 0)
                 {
@@ -203,7 +204,7 @@ namespace APSIM.Builds.Service
                         upgrade.IssueNumber = buildIssueNumber;
                         upgrade.IssueTitle = (string)reader["IssueTitle"];
                         upgrade.IssueURL = @"https://github.com/APSIMInitiative/ApsimX/issues/" + buildIssueNumber;
-                        upgrade.ReleaseURL = @"http://apsimdev.apsim.info/ApsimXFiles/ApsimSetup" + buildIssueNumber + ".exe";
+                        upgrade.ReleaseURL = $@"http://apsimdev.apsim.info/ApsimXFiles/{GetApsimXInstallerFileName(buildIssueNumber, pullRequestID)}";
                         upgrades.Add(upgrade);
                     }
                 }
@@ -232,7 +233,10 @@ namespace APSIM.Builds.Service
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
                         if (reader.Read())
-                            return @"http://apsimdev.apsim.info/ApsimXFiles/ApsimSetup" + issueNumber + ".exe";
+                        {
+                            int pullRequestID = (int)reader["PullRequestID"];
+                            return $@"http://apsimdev.apsim.info/ApsimXFiles/{GetApsimXInstallerFileName(issueNumber, pullRequestID)}";
+                        }
                     }
                 }
             }
@@ -319,13 +323,7 @@ namespace APSIM.Builds.Service
                             build.pullRequestID = (int)reader["PullRequestID"]; ;
                             build.issueNumber = (int)reader["IssueNumber"];
                             build.issueTitle = (string)reader["IssueTitle"];
-                            string fileName;
-                            // ApsimX pull request #6713 will be the first "official"
-                            // .net core release.
-                            if (build.pullRequestID >= 6713)
-                                fileName = $"apsim-{build.issueNumber}.exe";
-                            else
-                                fileName = $"ApsimSetup{build.issueNumber}.exe";
+                            string fileName = GetApsimXInstallerFileName(build.issueNumber, build.pullRequestID);
                             build.url = $@"http://apsimdev.apsim.info/ApsimXFiles/{fileName}";
                             return build;
                         }
@@ -334,6 +332,21 @@ namespace APSIM.Builds.Service
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Get the URL of the windows installer for a version with a given issue
+        /// and pull request number.
+        /// </summary>
+        /// <param name="issueNumber">Issue number of the release.</param>
+        /// <param name="pullID">Pull request number of the release.</param>
+        private static string GetApsimXInstallerFileName(int issueNumber, int pullID)
+        {
+            // ApsimX pull request #6713 will be the first "official"
+            // .net core release.
+            if (pullID >= 6713)
+                return $"apsim-{issueNumber}.exe";
+            return $"ApsimSetup{issueNumber}.exe";
         }
 
         /// <summary>
