@@ -339,10 +339,19 @@ namespace APSIM.Builds.Service
         /// <summary>
         /// Gets the version number of the latest build/upgrade.
         /// </summary>
+        /// <remarks>
+        /// This is just plain wrong. This little algorithm is hardcoded into
+        /// so many different places. If you change this here, be sure to pay
+        /// a visit to the following places:
+        /// - APSIM.POStats.Collector
+        /// - Jenkins release scripts (batch and bash)
+        /// - APSIM.Registration.Service
+        /// - Possibly others which I still haven't realised are broken.
+        /// </remarks>
         public string GetLatestVersion()
         {
             Build latest = GetLatestBuild();
-            return latest.date.ToString("yyyy.MM.dd.") + latest.issueNumber;
+            return latest.date.ToString("yyyy.M.d.") + latest.issueNumber;
         }
 
         /// <summary>Get documentation HTML for the specified version.</summary>
