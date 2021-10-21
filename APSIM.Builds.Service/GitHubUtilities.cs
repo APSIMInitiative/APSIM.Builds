@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
+using APSIM.Shared.Utilities;
 using Octokit;
 namespace APSIM.Builds
 {
@@ -109,6 +110,29 @@ namespace APSIM.Builds
         {
             GetIssueDetails(pullRequest, out int issueID, out bool resolves);
             return resolves;
+        }
+
+        /// <summary>
+        /// Get the date on which tests were run for the given pull request.
+        /// </summary>
+        /// <param name="pull"></param>
+        public static DateTime GetTestDate(this PullRequest pull, string owner, string repo)
+        {
+            GitHubClient client = new GitHubClient(new ProductHeaderValue(owner));
+            client.Credentials = GetGitHubCredentials();
+
+            Task<IReadOnlyList<PullRequestCommit>> task = client.PullRequest.Commits(owner, repo, pull.Number);
+            task.Wait();
+            IReadOnlyList<PullRequestCommit> commits = task.Result;
+            if (commits.Any())
+            {
+                Task<CombinedCommitStatus> statusTask = client.Repository.Status.GetCombined(owner, repo, commits.Last().Sha);
+                statusTask.Wait();
+                CombinedCommitStatus combined = statusTask.Result;
+                if (combined.Statuses.Any())
+                    return combined.Statuses.Last().UpdatedAt.LocalDateTime;
+            }
+            return pull.UpdatedAt.DateTime;
         }
 
         /// <summary>

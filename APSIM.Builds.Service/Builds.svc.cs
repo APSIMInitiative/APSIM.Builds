@@ -43,8 +43,8 @@ namespace APSIM.Builds.Service
                     string sql = "INSERT INTO ApsimX (Date, PullRequestID, IssueNumber, IssueTitle, Released) " +
                                  "VALUES (@Date, @PullRequestID, @IssueNumber, @IssueTitle, @Released)";
 
-                    DateTime date = DateTime.Now;
                     PullRequest pull = GitHubUtilities.GetPullRequest(pullRequestNumber, owner, repo);
+                    DateTime date = pull.GetTestDate(owner, repo);
                     pull.GetIssueDetails(out int issueNumber, out bool released);
                     string issueTitle = pull.GetIssueTitle(owner, repo);
                     using (SqlCommand command = new SqlCommand(sql, connection))
