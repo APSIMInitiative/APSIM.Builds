@@ -204,7 +204,7 @@ namespace APSIM.Builds.Service
                         upgrade.IssueNumber = buildIssueNumber;
                         upgrade.IssueTitle = (string)reader["IssueTitle"];
                         upgrade.IssueURL = @"https://github.com/APSIMInitiative/ApsimX/issues/" + buildIssueNumber;
-                        upgrade.ReleaseURL = $@"http://apsimdev.apsim.info/ApsimXFiles/{GetApsimXInstallerFileName(buildIssueNumber, pullRequestID)}";
+                        upgrade.ReleaseURL = $@"https://apsimdev.apsim.info/ApsimXFiles/{GetApsimXInstallerFileName(buildIssueNumber, pullRequestID)}";
                         upgrades.Add(upgrade);
                     }
                 }
@@ -235,7 +235,7 @@ namespace APSIM.Builds.Service
                         if (reader.Read())
                         {
                             int pullRequestID = (int)reader["PullRequestID"];
-                            return $@"http://apsimdev.apsim.info/ApsimXFiles/{GetApsimXInstallerFileName(issueNumber, pullRequestID)}";
+                            return $@"https://apsimdev.apsim.info/ApsimXFiles/{GetApsimXInstallerFileName(issueNumber, pullRequestID)}";
                         }
                     }
                 }
@@ -324,7 +324,7 @@ namespace APSIM.Builds.Service
                             build.issueNumber = (int)reader["IssueNumber"];
                             build.issueTitle = (string)reader["IssueTitle"];
                             string fileName = GetApsimXInstallerFileName(build.issueNumber, build.pullRequestID);
-                            build.url = $@"http://apsimdev.apsim.info/ApsimXFiles/{fileName}";
+                            build.url = $@"https://apsimdev.apsim.info/ApsimXFiles/{fileName}";
                             return build;
                         }
                     }
