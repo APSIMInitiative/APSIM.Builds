@@ -40,13 +40,14 @@ namespace APSIM.Builds.Service
             {
                 using (SqlConnection connection = BuildsClassic.Open())
                 {
-                    string sql = "INSERT INTO ApsimX (Date, PullRequestID, IssueNumber, IssueTitle, Released) " +
-                                 "VALUES (@Date, @PullRequestID, @IssueNumber, @IssueTitle, @Released)";
+                    string sql = "INSERT INTO ApsimX (Date, PullRequestID, IssueNumber, IssueTitle, Released, Version) " +
+                                 "VALUES (@Date, @PullRequestID, @IssueNumber, @IssueTitle, @Released, @Version)";
 
                     PullRequest pull = GitHubUtilities.GetPullRequest(pullRequestNumber, owner, repo);
                     DateTime date = pull.GetTestDate(owner, repo);
                     pull.GetIssueDetails(out int issueNumber, out bool released);
                     string issueTitle = pull.GetIssueTitle(owner, repo);
+                    int nextVersion = Convert.ToInt32(GetNextVersion());
                     using (SqlCommand command = new SqlCommand(sql, connection))
                     {
                         command.Parameters.Add(new SqlParameter("@Date", date));
@@ -54,6 +55,7 @@ namespace APSIM.Builds.Service
                         command.Parameters.Add(new SqlParameter("@IssueNumber", issueNumber));
                         command.Parameters.Add(new SqlParameter("@IssueTitle", issueTitle));
                         command.Parameters.Add(new SqlParameter("@Released", released));
+                        command.Parameters.Add(new SqlParameter("@Version", nextVersion));
                         command.ExecuteNonQuery();
                     }
                 }
@@ -87,6 +89,19 @@ namespace APSIM.Builds.Service
             }
         }
 
+        /// <summary>
+        /// Get the next version number.
+        /// </summary>
+        public uint GetNextVersion()
+        {
+            using (SqlConnection connection = BuildsClassic.Open())
+            {
+                string sql = "SELECT MAX([Version]) FROM ApsimX";
+                using (SqlCommand command = new SqlCommand(sql, connection))
+                    // This will throw OverFlowException if last version is < 0.
+                    return Convert.ToUInt32((int)command.ExecuteScalar()) + 1;
+            }
+        }
         /// <summary>
         /// Gets a list of possible upgrades since the specified Apsim version.
         /// </summary>
@@ -205,6 +220,7 @@ namespace APSIM.Builds.Service
                         upgrade.IssueTitle = (string)reader["IssueTitle"];
                         upgrade.IssueURL = @"https://github.com/APSIMInitiative/ApsimX/issues/" + buildIssueNumber;
                         upgrade.ReleaseURL = $@"https://apsimdev.apsim.info/ApsimXFiles/{GetApsimXInstallerFileName(buildIssueNumber, pullRequestID)}";
+                        upgrade.RevisionNumber = Convert.ToUInt32((int)reader["Version"]);
                         upgrades.Add(upgrade);
                     }
                 }
