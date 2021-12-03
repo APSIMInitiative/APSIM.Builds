@@ -219,8 +219,9 @@ namespace APSIM.Builds.Service
                         upgrade.IssueNumber = buildIssueNumber;
                         upgrade.IssueTitle = (string)reader["IssueTitle"];
                         upgrade.IssueURL = @"https://github.com/APSIMInitiative/ApsimX/issues/" + buildIssueNumber;
-                        upgrade.ReleaseURL = $@"https://apsimdev.apsim.info/ApsimXFiles/{GetApsimXInstallerFileName(buildIssueNumber, pullRequestID)}";
-                        upgrade.RevisionNumber = Convert.ToUInt32((int)reader["Version"]);
+                        int revision = (int)reader["Version"];
+                        upgrade.RevisionNumber = Convert.ToUInt32(revision);
+                        upgrade.ReleaseURL = $@"https://apsimdev.apsim.info/ApsimXFiles/{GetApsimXInstallerFileName(revision, pullRequestID)}";
                         upgrades.Add(upgrade);
                     }
                 }
@@ -354,15 +355,15 @@ namespace APSIM.Builds.Service
         /// Get the URL of the windows installer for a version with a given issue
         /// and pull request number.
         /// </summary>
-        /// <param name="issueNumber">Issue number of the release.</param>
+        /// <param name="revision">Issue number of the release. For older versions, the revision number and issue number are the same.</param>
         /// <param name="pullID">Pull request number of the release.</param>
-        private static string GetApsimXInstallerFileName(int issueNumber, int pullID)
+        private static string GetApsimXInstallerFileName(int revision, int pullID)
         {
             // ApsimX pull request #6713 will be the first "official"
             // .net core release.
             if (pullID >= 6713)
-                return $"apsim-{issueNumber}.exe";
-            return $"ApsimSetup{issueNumber}.exe";
+                return $"apsim-{revision}.exe";
+            return $"ApsimSetup{revision}.exe";
         }
 
         /// <summary>
