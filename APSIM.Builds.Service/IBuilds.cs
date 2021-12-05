@@ -23,6 +23,13 @@ namespace APSIM.Builds.Service
         [WebGet(UriTemplate = "/AddBuild?pullRequestNumber={pullRequestNumber}&ChangeDBPassword={changeDBPassword}", BodyStyle = WebMessageBodyStyle.WrappedRequest)]
         void AddBuild(int pullRequestNumber, string changeDBPassword);
 
+        /// <summary>
+        /// Get the next version number.
+        /// </summary>
+        [OperationContract]
+        [WebGet(UriTemplate = "/GetNextVersion")]
+        uint GetNextVersion();
+
         /// <summary>Add a green build to the build database.</summary>
         /// <param name="pullRequestNumber">The GitHub pull request number.</param>
         /// <param name="buildTimeStamp">The build time stamp</param>
