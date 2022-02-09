@@ -48,7 +48,7 @@
                     string issueTitle = payload.PullRequest.GetIssueTitle("APSIMInitiative", "ApsimX");
                     bool released = payload.PullRequest.FixesAnIssue();
                     string mergeCommit = payload.PullRequest.MergeCommitSha;
-                    string jenkinsUrl = $"http://apsimdev.apsim.info:8080/jenkins/job/CreateInstallation/buildWithParameters?token={token}&ISSUE_NUMBER={issueNumber}&PULL_ID={pullId}&COMMIT_AUTHOR={author}&ISSUE_TITLE={issueTitle}&RELEASED={released}&MERGE_COMMIT={mergeCommit}";
+                    string jenkinsUrl = $"https://jenkins.apsim.info/job/apsim-release/buildWithParameters?token={token}&ISSUE_NUMBER={issueNumber}&PULL_ID={pullId}&COMMIT_AUTHOR={author}&ISSUE_TITLE={issueTitle}&RELEASED={released}&MERGE_COMMIT={mergeCommit}";
                     if (released)
                     {
                         WebUtilities.CallRESTService<object>(jenkinsUrl);
