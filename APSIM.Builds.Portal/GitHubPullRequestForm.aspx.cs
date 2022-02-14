@@ -11,6 +11,11 @@
     public partial class GitHubPullRequestForm : System.Web.UI.Page
     {
         /// <summary>
+        /// URL of the jenkins server.
+        /// </summary>
+        private const string jenkinsUrl = "https://jenkins.apsim.info";
+
+        /// <summary>
         /// Page has been loaded - called by GitHub when a pull request is opened, merged or closed.
         /// </summary>
         /// <param name="sender"></param>
@@ -48,10 +53,10 @@
                     string issueTitle = payload.PullRequest.GetIssueTitle("APSIMInitiative", "ApsimX");
                     bool released = payload.PullRequest.FixesAnIssue();
                     string mergeCommit = payload.PullRequest.MergeCommitSha;
-                    string jenkinsUrl = $"https://jenkins.apsim.info/job/apsim-release/buildWithParameters?token={token}&ISSUE_NUMBER={issueNumber}&PULL_ID={pullId}&COMMIT_AUTHOR={author}&ISSUE_TITLE={issueTitle}&RELEASED={released}&MERGE_COMMIT={mergeCommit}";
+                    string jenkinsURL = $"{jenkinsUrl}/job/apsim-release/buildWithParameters?token={token}&ISSUE_NUMBER={issueNumber}&PULL_ID={pullId}&COMMIT_AUTHOR={author}&ISSUE_TITLE={issueTitle}&RELEASED={released}&MERGE_COMMIT={mergeCommit}";
                     if (released)
                     {
-                        WebUtilities.CallRESTService<object>(jenkinsUrl);
+                        WebUtilities.CallRESTService<object>(jenkinsURL);
                         ShowMessage(string.Format("Triggered a deploy step for {0}'s pull request {1} - {2}", author, pullId, payload.PullRequest.Title));
                     }
                     else
@@ -66,8 +71,8 @@
                     {
                         string token = GetJenkinsReleaseClassicToken();
                         string sha = payload.PullRequest.MergeCommitSha;
-                        string jenkinsUrl = $"http://apsimdev.apsim.info:8080/jenkins/job/ReleaseClassic/buildWithParameters?token={token}&PULL_ID={pullId}&SHA1={sha}";
-                        WebUtilities.CallRESTService<object>(jenkinsUrl);
+                        string jenkinsURL = $"{jenkinsUrl}/job/ReleaseClassic/buildWithParameters?token={token}&PULL_ID={pullId}&SHA1={sha}";
+                        WebUtilities.CallRESTService<object>(jenkinsURL);
                         ShowMessage($"Triggered a deploy step for {author}'s pull request #{pullId} - {payload.PullRequest.Title}");
                     }
                     else
