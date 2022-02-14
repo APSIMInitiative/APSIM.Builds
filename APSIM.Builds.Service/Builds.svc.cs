@@ -94,14 +94,23 @@ namespace APSIM.Builds.Service
         /// </summary>
         public uint GetNextVersion()
         {
+            return GetLatestRevisionNumber() + 1;
+        }
+
+        /// <summary>
+        /// Get the latest version number.
+        /// </summary>
+        public uint GetLatestRevisionNumber()
+        {
             using (SqlConnection connection = BuildsClassic.Open())
             {
                 string sql = "SELECT MAX([Version]) FROM ApsimX";
                 using (SqlCommand command = new SqlCommand(sql, connection))
                     // This will throw OverFlowException if last version is < 0.
-                    return Convert.ToUInt32((int)command.ExecuteScalar()) + 1;
+                    return Convert.ToUInt32((int)command.ExecuteScalar());
             }
         }
+
         /// <summary>
         /// Gets a list of possible upgrades since the specified Apsim version.
         /// </summary>
@@ -389,7 +398,7 @@ namespace APSIM.Builds.Service
         public Stream GetDocumentationHTMLForVersion(string apsimVersion)
         {
             if (apsimVersion == null)
-                apsimVersion = GetLatestVersion();
+                apsimVersion = GetLatestRevisionNumber().ToString(CultureInfo.InvariantCulture);
 
             WebOperationContext.Current.OutgoingResponse.ContentType = "text/html; charset=utf-8";
             var indexFileName = @"D:\Websites\ApsimX\Releases\" + apsimVersion + @"\index.html";
