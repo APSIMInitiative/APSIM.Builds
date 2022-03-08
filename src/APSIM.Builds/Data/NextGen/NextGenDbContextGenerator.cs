@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace APSIM.Builds.Data;
+namespace APSIM.Builds.Data.NextGen;
 
 /// <summary>
 /// This class can construct nextgen DB context instances by reading from an
