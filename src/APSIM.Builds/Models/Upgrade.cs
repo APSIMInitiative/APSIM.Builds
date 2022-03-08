@@ -1,65 +1,86 @@
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace APSIM.Builds
+namespace APSIM.Builds.Models
 {
     /// <summary>
     /// An class encapsulating an APSIM Next Gen upgrade.
     /// </summary>
+    [Table("ApsimX")]
     public class Upgrade : IComparable<Upgrade>
     {
         /// <summary>
         /// ID of the upgrade in the database.
         /// </summary>
-        /// <value></value>
-        public uint Id { get; set; }
-
-        /// <summary>
-        /// Release date of the upgrade.
-        /// </summary>
-        public DateTime ReleaseDate { get; set; }
+        public int Id { get; private init; }
 
         /// <summary>
         /// Number/ID of the issue addressed by this upgrade.
         /// </summary>
-        public uint IssueNumber { get; set; }
+        public uint IssueNumber { get; private init; }
 
         /// <summary>
         /// Number/ID of the pull request which generated this upgrade.
         /// </summary>
-        public uint PullRequestNumber { get; set; }
+        public uint PullRequestNumber { get; private init; }
 
         /// <summary>
         /// Title of the issue addressed by this upgrade.
         /// </summary>
-        public string IssueTitle { get; set; }
+        public string IssueTitle { get; private init; }
 
         /// <summary>
         /// URL of the issue addressed by this upgrade.
         /// </summary>
-        public string IssueUrl { get; set; }
+        public string IssueUrl { get; private init; }
 
         /// <summary>
-        /// Is this upgrade released?
+        /// Release date of the upgrade.
         /// </summary>
-        /// <remarks>
-        /// This will be true iff the pull request fixed an issue.
-        /// </remarks>
-        public bool Released { get; set; }
+        public DateTime ReleaseDate { get; private init; }
+
+        /// <summary>
+        /// Revision number of the upgrade.
+        /// </summary>
+        public uint Revision { get; private init; }
 
         /// <summary>
         /// Create an <see cref="Upgrade" /> instance.
         /// </summary>
-        /// <param name="date">Release date of the upgrade.</param>
-        /// <param name="issue">Number/ID of the issue addressed by this upgrade.</param>
-        /// <param name="title">Upgrade title.</param>
+        /// <remarks>
+        /// This constructor is provided for use by the entity framework, and
+        /// should not be called directly from user code.
+        /// </remarks>
+        /// <param name="id">ID of the upgrade in the database.
+        /// <param name="releaseDate">Release date of the upgrade.</param>
+        /// <param name="issueNumber">Number/ID of the issue addressed by this upgrade.</param>
+        /// <param name="pullRequestNumber">Number/ID of the pull request which generated this upgrade.</param>
+        /// <param name="issueTitle">Upgrade title.</param>
         /// <param name="issueUrl">URL of the issue addressed by this upgrade.</param>
-        public Upgrade(DateTime date, uint issue, uint pullRequest, string title, string issueUrl)
+        /// <param name="revision">Revision number of the upgrade.</param>
+        public Upgrade(int id, DateTime releaseDate, uint issueNumber, uint pullRequestNumber, string issueTitle, string issueUrl, uint revision)
+            : this(issueNumber, pullRequestNumber, issueTitle, issueUrl, revision)
         {
-            ReleaseDate = date;
-            IssueNumber = issue;
-            PullRequestNumber = pullRequest;
-            IssueTitle = title;
+            Id = id;
+            ReleaseDate = releaseDate;
+        }
+
+        /// <summary>
+        /// Create an <see cref="Upgrade" /> instance.
+        /// </summary>
+        /// <param name="issueNumber">Number/ID of the issue addressed by this upgrade.</param>
+        /// <param name="pullRequestNumber">Number/ID of the pull request which generated this upgrade.</param>
+        /// <param name="issueTitle">Upgrade title.</param>
+        /// <param name="issueUrl">URL of the issue addressed by this upgrade.</param>
+        /// <param name="revision">Revision number of the upgrade.</param>
+        public Upgrade(uint issueNumber, uint pullRequestNumber, string issueTitle, string issueUrl, uint revision)
+        {
+            ReleaseDate = DateTime.Now;
+            IssueNumber = issueNumber;
+            PullRequestNumber = pullRequestNumber;
+            IssueTitle = issueTitle;
             IssueUrl = issueUrl;
+            Revision = revision;
         }
 
         /// <summary>

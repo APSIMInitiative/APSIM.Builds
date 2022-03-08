@@ -1,23 +1,25 @@
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace APSIM.Builds.Data.OldApsim
 {
+    [Table("BuildsClassic")]
     public class Build
     {
         /// <summary>
         /// Build ID.
         /// </summary>
-        public uint Id { get; set; }
+        public int Id { get; set; }
 
         /// <summary>
-        /// User who submitted the build.
+        /// Patch/build author.
         /// </summary>
-        public string UserName { get; set; }
+        public string Author { get; set; }
 
         /// <summary>
         /// Build title/description.
         /// </summary>
-        public string Description { get; set; }
+        public string Title { get; set; }
 
         /// <summary>
         /// Number/ID of the bug addressed by this build.

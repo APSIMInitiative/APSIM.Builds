@@ -1,5 +1,5 @@
 using System;
-using APSIM.Builds;
+using APSIM.Builds.Models;
 using Xunit;
 
 namespace APSIM.Builds.Tests
@@ -12,7 +12,7 @@ namespace APSIM.Builds.Tests
         [Fact]
         public void TestReleaseUrl()
         {
-            Upgrade upgrade = new Upgrade(new DateTime(2000, 1, 1), 37, 0, null, null);
+            Upgrade upgrade = new Upgrade(37, 0, null, null, 1);
             Assert.Equal("https://apsimdev.apsim.info/ApsimXFiles/apsim-37.deb", upgrade.GetURL(Platform.Linux));
             Assert.Equal("https://apsimdev.apsim.info/ApsimXFiles/apsim-37.dmg", upgrade.GetURL(Platform.MacOS));
             Assert.Equal("https://apsimdev.apsim.info/ApsimXFiles/apsim-37.exe", upgrade.GetURL(Platform.Windows));
@@ -21,23 +21,22 @@ namespace APSIM.Builds.Tests
         [Fact]
         public void TestConstructor()
         {
-            Upgrade upgrade = new Upgrade(new DateTime(1900, 12, 31), 14, 153, "issuetitle", "issueuri");
-            Assert.Equal<int>(1900, upgrade.ReleaseDate.Year);
-            Assert.Equal<int>(12, upgrade.ReleaseDate.Month);
-            Assert.Equal<int>(31, upgrade.ReleaseDate.Day);
+            Upgrade upgrade = new Upgrade(14, 153, "issuetitle", "issueuri", 1234);
+            Assert.Equal<DateTime>(DateTime.Now.Date, upgrade.ReleaseDate.Date);
             Assert.Equal<uint>(14, upgrade.IssueNumber);
             Assert.Equal<uint>(153, upgrade.PullRequestNumber);
             Assert.Equal("issuetitle", upgrade.IssueTitle);
             Assert.Equal("issueuri", upgrade.IssueUrl);
+            Assert.Equal<uint>(1234, upgrade.Revision);
         }
 
         [Fact]
         public void TestCompare()
         {
-            Upgrade u1 = new Upgrade(new DateTime(1999, 12, 31), 0, 0, null, null);
-            Upgrade u2 = new Upgrade(new DateTime(2000, 1, 1), 0, 0, null, null);
-            Upgrade u3 = new Upgrade(new DateTime(2000, 1, 1), 0, 0, null, null);
-            Upgrade u4 = new Upgrade(new DateTime(2000, 1, 2), 0, 0, null, null);
+            Upgrade u1 = new Upgrade(1, new DateTime(1999, 12, 31), 0, 0, null, null, 1);
+            Upgrade u2 = new Upgrade(2, new DateTime(2000, 1, 1), 0, 0, null, null, 1);
+            Upgrade u3 = new Upgrade(3, new DateTime(2000, 1, 1), 0, 0, null, null, 1);
+            Upgrade u4 = new Upgrade(4, new DateTime(2000, 1, 2), 0, 0, null, null, 1);
             Assert.Equal<int>(-1, u1.CompareTo(u2));
             Assert.Equal<int>(-1, u1.CompareTo(u3));
             Assert.Equal<int>(-1, u1.CompareTo(u4));

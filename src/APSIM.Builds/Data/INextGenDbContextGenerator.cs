@@ -1,4 +1,4 @@
-namespace APSIM.Builds
+namespace APSIM.Builds.Data
 {
     public interface INextGenDbContextGenerator
     {

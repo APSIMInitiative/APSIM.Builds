@@ -1,26 +1,33 @@
-using APSIM.Builds;
+using APSIM.Builds.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
+using System.Threading.Tasks;
 
 namespace APSIM.Builds.Data
 {
+    /// <summary>
+    /// DB context for the APSIM builds database.
+    /// </summary>
     public class NextGenDBContext : DbContext, INextGenDbContext
     {
+        /// <summary>
+        /// Available upgrades/versions of apsim.
+        /// </summary>
         public DbSet<Upgrade> Upgrades { get; set; }
 
-        public NextGenDBContext(DbContextOptions<NextGenDBContext> options) : base(options)
+        /// <summary>
+        /// Create a new <see cref="NextGenDBContext"/>.
+        /// </summary>
+        /// <param name="options">DB context builder options.</param>
+        public NextGenDBContext(DbContextOptions options) : base(options)
         {
         }
 
         /// <summary>
-        /// Override model creation so that we can map the Upgrades property
-        /// to a table in the DB with a different name (ApsimX).
+        /// Save changes to the DB.
         /// </summary>
-        /// <param name="modelBuilder">Model builder object.</param>
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        public Task<int> SaveChangesAsync()
         {
-            modelBuilder.Entity<Upgrade>().ToTable("ApsimX");
+            return base.SaveChangesAsync();
         }
     }
 }
