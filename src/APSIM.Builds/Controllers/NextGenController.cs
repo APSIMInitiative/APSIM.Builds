@@ -45,7 +45,7 @@ public class NextGenController : ControllerBase
     /// Environment variable containing the token used to remotely start an
     /// apsim-release job on the jenkins server.
     /// </summary>
-    private const string jenkinsToken = "JENKINS_TOKEN";
+    private const string jenkinsToken = "JENKINS_TOKEN_NG";
 
     /// <summary>
     /// Environment variable containing the private key for HMAC-256

@@ -24,7 +24,7 @@ public class Startup
     /// <summary>
     /// Environment variable containing the HMAC token secret key.
     /// </summary>
-    private const string hmacKey = "HMAC_SECRET_KEY";
+    private const string jwtKey = "JWT_SECRET_KEY";
 
     /// <summary>
     /// Token issuer.
@@ -52,7 +52,7 @@ public class Startup
         services.AddSingleton<IOldApsimDbContextGenerator>(new OldApsimDbContextGenerator());
 
         // Enable JWT Authentication.
-        string privateKey = GetHmacKey();
+        string privateKey = GetJwtKey();
         string issuer = tokenIssuer;
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(opts =>
@@ -101,9 +101,9 @@ public class Startup
     /// <summary>
     /// Get the HMAC secret key used for JWT auth.
     /// </summary>
-    private static string GetHmacKey()
+    private static string GetJwtKey()
     {
-        return EnvironmentVariable.Read(hmacKey, "Private key for API request verification");
+        return EnvironmentVariable.Read(jwtKey, "Private key for API request verification");
     }
 
     /// <summary>
@@ -111,11 +111,11 @@ public class Startup
     /// </summary>
     private static string BuildToken()
     {
-        string secret = GetHmacKey();
+        string secret = GetJwtKey();
         string issuer = tokenIssuer;
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var token = new JwtSecurityToken(issuer, issuer, expires: DateTime.Now.AddYears(10), signingCredentials: creds);
+        var token = new JwtSecurityToken(issuer, issuer, expires: DateTime.Now.AddYears(tokenExpiryYears), signingCredentials: creds);
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
