@@ -253,7 +253,7 @@ public class NextGenController : ControllerBase
     private static uint GetLatestRevision(INextGenDbContext context)
     {
         if (context.Upgrades.Any())
-            return context.Upgrades.Last().Revision;
+            return context.Upgrades.Max(u => u.Revision);
         return 0;
     }
 }
