@@ -27,7 +27,7 @@ namespace APSIM.Builds.Controllers;
 /// <summary>
 /// APSIM Next Gen API controller.
 /// </summary>
-[Route("nextgen")]
+[Route("api/nextgen")]
 [ApiController]
 public class NextGenController : ControllerBase
 {
