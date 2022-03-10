@@ -21,6 +21,7 @@ using System.Net.Mime;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Release = APSIM.Builds.Models.Release;
 
 namespace APSIM.Builds.Controllers;
 
@@ -115,12 +116,23 @@ public class NextGenController : ControllerBase
     }
 
     /// <summary>
-    /// Enumerate the available upgrades/releases.
+    /// Enumerate the available releases.
     /// </summary>
     /// <param name="n">Number of upgrades to fetch, -1 for unlimited.</param>
     /// <param name="min">Min revision number. Return all upgrades more recent than this. -1 for unlimited.</param>
     [HttpPost("list")]
     [AllowAnonymous]
+    public async Task<IEnumerable<Release>> ListReleasesAsync(int n = -1, int min = -1)
+    {
+        IEnumerable<Upgrade> upgrades = await ListUpgrades(n, min);
+        return upgrades.Select(u => new Release(u));
+    }
+
+    /// <summary>
+    /// Enumerate the available upgrades.
+    /// </summary>
+    /// <param name="n">Number of upgrades to fetch, -1 for unlimited.</param>
+    /// <param name="min">Min revision number. Return all upgrades more recent than this. -1 for unlimited.</param>
     public async Task<IEnumerable<Upgrade>> ListUpgrades(int n = -1, int min = -1)
     {
         using (INextGenDbContext context = generator.GenerateDbContext())
