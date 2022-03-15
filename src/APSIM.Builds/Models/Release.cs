@@ -63,7 +63,7 @@ public class Release
         ReleaseDate = upgrade.ReleaseDate;
         Issue = upgrade.IssueNumber;
         Title = upgrade.IssueTitle;
-        const string downloadLinkFormat = "https://registration.apsim.info/?product=APSIM%20Next%20Generation&version={0}&platform={1}";
+        const string downloadLinkFormat = "https://builds.apsim.info/api/nextgen/download/{0}/{1}";
         DownloadLinkDebian = string.Format(downloadLinkFormat, upgrade.Revision, "Linux");
         DownloadLinkWindows = string.Format(downloadLinkFormat, upgrade.Revision, "Windows");
         DownloadLinkMacOS = string.Format(downloadLinkFormat, upgrade.Revision, "MacOS");

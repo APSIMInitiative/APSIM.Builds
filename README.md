@@ -13,6 +13,7 @@ The following environment variables must be set in order to run the website:
 - `DOCUMENTATION_PATH`: Path to autodocs files on disk
 - `NG_DB_CONNECTION_STRING`: NextGen builds DB connection string
 - `OLD_DB_CONNECTION_STRING`: Old APSIM buidls DB connection string
+- `INSTALLERS_PATH`: Path to the apsim installers.
 
 It's possible to run a local instance of the website. In this case, you will need to be running MySQL servers for nextgen and classic. This is easy to accomplish with docker.
 

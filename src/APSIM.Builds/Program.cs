@@ -20,6 +20,12 @@ public class Program
         Host.CreateDefaultBuilder(args)
             .ConfigureWebHostDefaults(webBuilder =>
             {
-                webBuilder.UseStartup<Startup>();
+                webBuilder.UseStartup<Startup>()
+                          .UseKestrel(opts =>
+                          {
+                              // No maximum request size. Otherwise the installer files
+                              // will be too large to be POSTed.
+                              opts.Limits.MaxRequestBodySize = null;
+                          });
             });
 }
