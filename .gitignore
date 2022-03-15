@@ -12,3 +12,5 @@ APSIM.Builds.Portal/ValidationGraphs/
 ConsoleApplication1/App.config
 ConsoleApplication1/
 .vs/
+**/bin/
+**/obj/
