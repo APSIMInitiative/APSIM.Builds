@@ -143,6 +143,7 @@ public class NextGenController : ControllerBase
         using (INextGenDbContext context = generator.GenerateDbContext())
         {
             IAsyncEnumerable<Upgrade> result = context.Upgrades.ToAsyncEnumerable();
+            result = result.OrderByDescending(u => u.ReleaseDate);
             if (min >= 0)
                 result = result.Where(u => u.Revision > min);
             if (n > 0)

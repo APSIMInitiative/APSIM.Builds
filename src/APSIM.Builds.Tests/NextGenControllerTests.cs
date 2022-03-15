@@ -174,6 +174,9 @@ public class NextGenControllerTests
         List<Upgrade> added = await PopulateDB(numUpgrades);
         List<Upgrade> upgrades = (await controller.ListUpgrades()).ToList();
 
+        // The result should be ordered by release date descending.
+        added = added.OrderByDescending(u => u.ReleaseDate).ToList();
+
         Assert.Equal<int>(added.Count, upgrades.Count);
         for (int i = 0; i < upgrades.Count; i++)
             AssertEqual(added[i], upgrades[i]);
@@ -276,7 +279,7 @@ public class NextGenControllerTests
         List<Upgrade> upgrades = new List<Upgrade>((int)numUpgrades);
         for (ushort i = 0; i < numUpgrades; i++)
         {
-            Upgrade upgrade = new Upgrade(i, i * 1000u, $"Issue {i}", $"PR {i}", i);
+            Upgrade upgrade = new Upgrade(i + 1, DateTime.Now.AddDays(1), i, i * 1000u, $"Issue {i}", $"PR {i}", i);
             Upgrade inserted = await AddUpgrade(upgrade);
             upgrades.Add(inserted);
         }
