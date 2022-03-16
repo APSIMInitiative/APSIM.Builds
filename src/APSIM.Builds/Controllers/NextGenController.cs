@@ -189,6 +189,11 @@ public class NextGenController : ControllerBase
     [Authorize]
     public async Task<IActionResult> UploadDocsAsync([FromForm] IFormFile file, uint pullRequestNumber)
     {
+        if (file == null)
+            return BadRequest("No file was provided");
+        if (string.IsNullOrEmpty(file.FileName))
+            return BadRequest("Filename not set in Content-Disposition header");
+
         string basePath = EnvironmentVariable.Read(documentationPath, "Path to autodocs");
         string prIdString = pullRequestNumber.ToString(CultureInfo.InvariantCulture);
         string outputPath = Path.Combine(basePath, prIdString);
