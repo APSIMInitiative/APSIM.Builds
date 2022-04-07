@@ -161,8 +161,11 @@ public class NextGenController : ControllerBase
     /// <returns></returns>
     [HttpPost("upload/installer")]
     [Authorize]
+    [RequestSizeLimit(200_000_000)]
     public async Task<IActionResult> UploadInstallerAsync([FromForm] IFormFile file, uint revision, Platform platform)
     {
+        if (file == null)
+            return BadRequest("No file was uploaded");
         string basePath = EnvironmentVariable.Read(installersPath, "Path to apsim installers");
         string fileName = GetInstallerFileName(revision, platform);
         string outputPath = Path.Combine(basePath, fileName);
