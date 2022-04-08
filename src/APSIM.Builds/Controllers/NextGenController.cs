@@ -111,7 +111,7 @@ public class NextGenController : ControllerBase
 
         using (INextGenDbContext context = generator.GenerateDbContext())
         {
-            uint revision = GetNextRevisionNumber();
+            uint revision = GetNextRevisionNumber(context);
             Upgrade upgrade = new Upgrade(issue.Number, pullRequestNumber, issue.Title, issue.Url, revision);
 
             // Add the release to the builds DB.
@@ -395,12 +395,9 @@ public class NextGenController : ControllerBase
     /// </summary>
     [HttpGet("nextversion")]
     [AllowAnonymous]
-    public uint GetNextRevisionNumber()
+    public uint GetNextRevisionNumber(INextGenDbContext context)
     {
-        using (INextGenDbContext context = generator.GenerateDbContext())
-        {
-            return GetLatestRevision(context) + 1;
-        }
+        return GetLatestRevision(context) + 1;
     }
 
     /// <summary>
