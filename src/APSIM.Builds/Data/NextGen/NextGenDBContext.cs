@@ -29,4 +29,17 @@ public class NextGenDBContext : DbContext, INextGenDbContext
     {
         return base.SaveChangesAsync();
     }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Upgrade>()
+            .Property(u => u.Revision)
+            .HasConversion<int>();
+        modelBuilder.Entity<Upgrade>()
+            .Property(u => u.IssueNumber)
+            .HasConversion<int>();
+        modelBuilder.Entity<Upgrade>()
+            .Property(u => u.PullRequestNumber)
+            .HasConversion<int>();
+    }
 }

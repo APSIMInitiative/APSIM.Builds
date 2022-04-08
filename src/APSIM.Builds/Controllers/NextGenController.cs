@@ -111,7 +111,7 @@ public class NextGenController : ControllerBase
 
         using (INextGenDbContext context = generator.GenerateDbContext())
         {
-            uint revision = GetNextRevisionNumber();
+            uint revision = GetNextRevisionNumber(context);
             Upgrade upgrade = new Upgrade(issue.Number, pullRequestNumber, issue.Title, issue.Url, revision);
 
             // Add the release to the builds DB.
@@ -161,8 +161,11 @@ public class NextGenController : ControllerBase
     /// <returns></returns>
     [HttpPost("upload/installer")]
     [Authorize]
+    [RequestSizeLimit(200_000_000)]
     public async Task<IActionResult> UploadInstallerAsync([FromForm] IFormFile file, uint revision, Platform platform)
     {
+        if (file == null)
+            return BadRequest("No file was uploaded");
         string basePath = EnvironmentVariable.Read(installersPath, "Path to apsim installers");
         string fileName = GetInstallerFileName(revision, platform);
         string outputPath = Path.Combine(basePath, fileName);
@@ -189,6 +192,11 @@ public class NextGenController : ControllerBase
     [Authorize]
     public async Task<IActionResult> UploadDocsAsync([FromForm] IFormFile file, uint pullRequestNumber)
     {
+        if (file == null)
+            return BadRequest("No file was provided");
+        if (string.IsNullOrEmpty(file.FileName))
+            return BadRequest("Filename not set in Content-Disposition header");
+
         string basePath = EnvironmentVariable.Read(documentationPath, "Path to autodocs");
         string prIdString = pullRequestNumber.ToString(CultureInfo.InvariantCulture);
         string outputPath = Path.Combine(basePath, prIdString);
@@ -387,12 +395,9 @@ public class NextGenController : ControllerBase
     /// </summary>
     [HttpGet("nextversion")]
     [AllowAnonymous]
-    public uint GetNextRevisionNumber()
+    public uint GetNextRevisionNumber(INextGenDbContext context)
     {
-        using (INextGenDbContext context = generator.GenerateDbContext())
-        {
-            return GetLatestRevision(context) + 1;
-        }
+        return GetLatestRevision(context) + 1;
     }
 
     /// <summary>
