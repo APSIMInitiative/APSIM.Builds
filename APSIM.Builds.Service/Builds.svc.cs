@@ -15,6 +15,9 @@ namespace APSIM.Builds.Service
     using System.Threading.Tasks;
     using System.Globalization;
     using APSIM.Shared.Web;
+    using System.Net.Http;
+    using System.Net;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// Web service that provides access to the ApsimX builds system.
@@ -89,6 +92,12 @@ namespace APSIM.Builds.Service
             }
         }
 
+        private void WriteToLog(string msg)
+        {
+            string logFile = @"D:\Websites\builds.log";
+            File.AppendAllLines(logFile, new[] { msg });
+        }
+
         /// <summary>
         /// Get the next version number.
         /// </summary>
@@ -121,23 +130,46 @@ namespace APSIM.Builds.Service
             if (string.IsNullOrEmpty(version))
                 return GetAllUpgrades();
 
-            int issueNumber = 0;
-
-            int lastDotPosition = version.LastIndexOf(".");
-            int.TryParse(version.Substring(lastDotPosition + 1), out issueNumber);
-
-            string dateFromVersion = version.Substring(0, lastDotPosition);
-            string[] formats = new string[]
+            if (!int.TryParse(version, NumberStyles.Integer, CultureInfo.InvariantCulture, out int revision))
             {
-                "yyyy.mm.dd",
-                "yyyy.m.dd",
-                "yyyy.mm.d",
-                "yyyy.m.d"
-            };
-            DateTime issueResolvedDate;
-            if (!DateTime.TryParseExact(dateFromVersion, formats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out issueResolvedDate))
-                throw new Exception(string.Format("Date is not in a valid format: {0}.", dateFromVersion));
-            return GetUpgradesSinceDate(issueResolvedDate).Where(u => u.IssueNumber != issueNumber).ToList();
+                int? maybeRevision = GetRevisionFromVersion(version);
+                if (maybeRevision == null)
+                    return GetAllUpgrades();
+                revision = (int)maybeRevision;
+            }
+
+            return GetUpgradesSinceIssue(revision);
+        }
+
+        /// <summary>
+        /// Attmept to parse a revision number from a version string. If string is invalid, return null.
+        /// </summary>
+        /// <param name="version">String to be parsed</param>
+        private int? GetRevisionFromVersion(string version)
+        {
+            if (string.IsNullOrEmpty(version))
+                return null;
+            string[] parts = version.Split('.');
+            if (parts.Length != 4)
+                return null;
+            if (int.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out int result))
+                return result;
+            return null;
+        }
+
+        private async Task<T> PostAsync<T>(string url)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                HttpResponseMessage response = await client.PostAsync(url, null);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    string message = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Received http response {response.StatusCode}: {message}");
+                }
+                string responseBody = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<T>(responseBody);
+            }
         }
 
         /// <summary>
@@ -146,19 +178,7 @@ namespace APSIM.Builds.Service
         /// <param name="n">Number of upgrades to fetch.</param>
         public List<Upgrade> GetLastNUpgrades(int n)
         {
-            using (SqlConnection connection = BuildsClassic.Open())
-            {
-                using (SqlCommand command = new SqlCommand("SELECT TOP (@NumRows) * FROM ApsimX WHERE Released = 1 ORDER BY Date DESC;", connection))
-                {
-                    if (n > 0)
-                        command.Parameters.AddWithValue("@NumRows", n);
-                    else
-                        command.CommandText = "SELECT * FROM ApsimX ORDER BY Date DESC;";
-
-                    using (SqlDataReader reader = command.ExecuteReader())
-                        return GetUpgrades(reader);
-                }
-            }
+            return GetReleases(n: n).Select(r => ToUpgrade(r)).ToList();
         }
 
         /// <summary>
@@ -168,47 +188,40 @@ namespace APSIM.Builds.Service
         /// <returns>The list of possible upgrades.</returns>
         public List<Upgrade> GetUpgradesSinceIssue(int issueNumber)
         {
-            if (issueNumber <= 0)
-                return GetAllUpgrades();
-
-            DateTime date = GetIssueResolvedDate(issueNumber);
-            // We need to filter the list of all upgrades to remove any upgrades which are on the same day and
-            // fix the same issue.
-            return GetUpgradesSinceDate(date).Where(u => u.IssueNumber != issueNumber || u.ReleaseDate.DayOfYear != date.DayOfYear).ToList();
+            return GetReleases(issueNumber).Select(r => ToUpgrade(r)).ToList();
         }
 
-        /// <summary>
-        /// Gets all list of released upgrades since a given date.
-        /// </summary>
-        /// <param name="date">The date.</param>
-        /// <returns>List of possible upgrades.</returns>
-        private List<Upgrade> GetUpgradesSinceDate(DateTime date)
+        private List<Release> GetReleases(int revision = -1, int n = -1)
         {
-            List<Upgrade> upgrades = new List<Upgrade>();
+            Task<List<Release>> task = GetReleasesAsync(revision, n);
+            task.Wait();
+            if (task.Exception != null)
+                throw task.Exception;
+            return task.Result;
 
-            string sql = "SELECT * FROM ApsimX " +
-                         "WHERE Date >= @Date" +
-                         " ORDER BY Date DESC";
+        }
+        private async Task<List<Release>> GetReleasesAsync(int revision = -1, int min = -1)
+        {
+            return await PostAsync<List<Release>>($"https://builds.apsim.info/api/nextgen/list?min={revision}&min={min}");
+        }
 
-            using (SqlConnection connection = BuildsClassic.Open())
+        private Upgrade ToUpgrade(Release release)
+        {
+            return new Upgrade()
             {
-                using (SqlCommand command = new SqlCommand(sql, connection))
-                {
-                    command.Parameters.AddWithValue("@Date", date.ToString("yyyy-MM-ddTHH:mm:ss"));
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        return GetUpgrades(reader);
-                    }
-                }
-            }
+                IssueNumber = (int)release.Issue,
+                IssueTitle = release.Title,
+                IssueURL = release.InfoUrl,
+                ReleaseDate = release.ReleaseDate,
+                issueNumber = (int)release.Issue,
+                ReleaseURL = release.DownloadLinkWindows,
+                RevisionNumber = release.Revision
+            };
         }
 
         private List<Upgrade> GetAllUpgrades()
         {
-            using (SqlConnection connection = BuildsClassic.Open())
-                using (SqlCommand command = new SqlCommand("SELECT * FROM ApsimX ORDER BY Date DESC;", connection))
-                    using (SqlDataReader reader = command.ExecuteReader())
-                        return GetUpgrades(reader);
+            return GetReleases().Select(r => ToUpgrade(r)).ToList();
         }
 
         private List<Upgrade> GetUpgrades(SqlDataReader reader)
@@ -239,125 +252,20 @@ namespace APSIM.Builds.Service
         }
 
         /// <summary>
-        /// Gets a URL for a version that resolves the specified issue
-        /// </summary>
-        /// <param name="issueNumber">The issue number.</param>
-        public string GetURLOfVersionForIssue(int issueNumber)
-        {
-            List<Upgrade> upgrades = new List<Upgrade>();
-
-            DateTime issueResolvedDate = GetIssueResolvedDate(issueNumber);
-
-            string sql = "SELECT * FROM ApsimX " +
-                         "WHERE IssueNumber = @IssueNumber";
-
-            using (SqlConnection connection = BuildsClassic.Open())
-            {
-                using (SqlCommand command = new SqlCommand(sql, connection))
-                {
-                    command.Parameters.AddWithValue("@IssueNumber", issueNumber);
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            int pullRequestID = (int)reader["PullRequestID"];
-                            return $@"https://apsimdev.apsim.info/ApsimXFiles/{GetApsimXInstallerFileName(issueNumber, pullRequestID)}";
-                        }
-                    }
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
         /// Gets the URL of the latest version.
         /// </summary>
         /// <param name="operatingSystem">Operating system to get url for.</param>
         /// <returns>The URL of the latest version of APSIM Next Generation.</returns>
         public string GetURLOfLatestVersion(string operatingSystem)
         {
-            Build latestBuild = GetLatestBuild();
+            List<Release> releases = GetReleases(n: 1);
+            Release latest = releases[0];
             if (operatingSystem == "Debian")
-                return Path.ChangeExtension(latestBuild.url, ".deb");
+                return latest.DownloadLinkDebian;
             else if (operatingSystem == "Mac")
-                return Path.ChangeExtension(latestBuild.url, ".dmg");
+                return latest.DownloadLinkMacOS;
             else
-                return latestBuild.url;
-        }
-
-        /// <summary>
-        /// Return the date the specified issue was resolved.
-        /// </summary>
-        /// <param name="issueNumber">The issue number</param>
-        /// <returns>The date.</returns>
-        private DateTime GetIssueResolvedDate(int issueNumber)
-        {
-            DateTime resolvedDate = new DateTime(2015, 1, 1);
-
-            string sql = "SELECT * FROM ApsimX " +
-                         "WHERE IssueNumber = @IssueNumber " +
-                         "ORDER BY Date DESC";
-            using (SqlConnection connection = BuildsClassic.Open())
-            {
-                using (SqlCommand command = new SqlCommand(sql, connection))
-                {
-                    command.Parameters.AddWithValue("@IssueNumber", issueNumber);
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        if (reader.Read())
-                            resolvedDate = (DateTime)reader["Date"];
-                    }
-                }
-            }
-
-            return resolvedDate;
-        }
-
-        /// <summary>
-        /// Get details about a GitHub pull request ID. Called from Jenkins.
-        /// </summary>
-        /// <param name="pullRequestID"></param>
-        /// <returns>Format of return string is yyyy-MM-dd hh:mm tt,ID</returns>
-        public string GetPullRequestDetails(int pullRequestID)
-        {
-            PullRequest pull = GitHubUtilities.GetPullRequest(pullRequestID, owner, repo);
-            pull.GetIssueDetails(out int issueID, out _);
-
-            if (issueID <= 0)
-                throw new Exception("Cannot find issue number in pull request: " + pullRequestID);
-
-            return DateTime.Now.ToString("yyyy.M.d-HH:mm") + "," + issueID;
-        }
-     
-        /// <summary>Get the latest build.</summary>
-        private static Build GetLatestBuild()
-        {
-            string sql = "SELECT TOP 1 * FROM ApsimX " +
-                         " WHERE Released=1" +
-                         " ORDER BY Date DESC";
-
-            using (SqlConnection connection = BuildsClassic.Open())
-            {
-                using (SqlCommand command = new SqlCommand(sql, connection))
-                {
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            Build build = new Build();
-                            build.date = (DateTime)reader["Date"];
-                            build.pullRequestID = (int)reader["PullRequestID"]; ;
-                            build.issueNumber = (int)reader["IssueNumber"];
-                            build.issueTitle = (string)reader["IssueTitle"];
-                            string fileName = GetApsimXInstallerFileName(build.issueNumber, build.pullRequestID);
-                            build.url = $@"https://apsimdev.apsim.info/ApsimXFiles/{fileName}";
-                            return build;
-                        }
-                    }
-                }
-            }
-
-            return null;
+                return latest.DownloadLinkWindows;
         }
 
         /// <summary>
@@ -389,8 +297,8 @@ namespace APSIM.Builds.Service
         /// </remarks>
         public string GetLatestVersion()
         {
-            Build latest = GetLatestBuild();
-            return latest.date.ToString("yyyy.M.d.") + latest.issueNumber;
+            List<Release> releases = GetReleases(n: 1);
+            return releases[0].Version;
         }
 
         /// <summary>Get documentation HTML for the specified version.</summary>

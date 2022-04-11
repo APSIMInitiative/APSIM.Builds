@@ -79,21 +79,6 @@ namespace APSIM.Builds.Service
         [WebGet(UriTemplate = "/GetLatestVersion", BodyStyle = WebMessageBodyStyle.WrappedRequest)]
         string GetLatestVersion();
 
-        /// <summary>
-        /// Gets a URL for a version that resolves the specified issue
-        /// </summary>
-        /// <param name="issueNumber">The issue number.</param>
-        [OperationContract]
-        [WebGet(UriTemplate = "/GetURLOfVersionForIssue?issueID={issueID}", BodyStyle = WebMessageBodyStyle.WrappedRequest)]
-        string GetURLOfVersionForIssue(int issueID);
-
-        /// <summary>
-        /// Get a GitHub issue ID from a pull request ID.
-        /// </summary>
-        [OperationContract]
-        [WebGet(UriTemplate = "/GetPullRequestDetails?pullRequestID={pullRequestID}", BodyStyle = WebMessageBodyStyle.WrappedRequest)]
-        string GetPullRequestDetails(int pullRequestID);
-
         /// <summary>Get documentation HTML for the specified version.</summary>
         /// <param name="apsimVersion">The version to get the doc for. Can be null for latest version.</param>
         [OperationContract]
