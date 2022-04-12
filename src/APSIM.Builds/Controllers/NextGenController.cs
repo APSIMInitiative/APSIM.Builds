@@ -353,8 +353,10 @@ public class NextGenController : ControllerBase
 
         string baseDocsPath = EnvironmentVariable.Read(documentationPath, "Documentation path");
         string filePath = Path.Combine(baseDocsPath, pullRequestString, "index.html");
-        using (FileStream stream = System.IO.File.OpenRead(filePath))
-            return new FileStreamResult(stream, "text/html; charset=utf-8");
+
+        // The stream will be closed by the FileStreamResult internally.
+        FileStream stream = System.IO.File.OpenRead(filePath);
+        return new FileStreamResult(stream, "text/html; charset=utf-8");
     }
 
     /// <summary>
