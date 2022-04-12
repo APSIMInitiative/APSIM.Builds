@@ -333,12 +333,22 @@ public class NextGenController : ControllerBase
     }
 
     /// <summary>
+    /// Get default documentation HTML for the latest version.
+    /// </summary>
+    [HttpGet("docs")]
+    [AllowAnonymous]
+    public FileStreamResult GetDocumentationHtml()
+    {
+        return GetDocumentationHtmlForVersion();
+    }
+
+    /// <summary>
     /// Get documentation HTML for the specified version.
     /// </summary>
     /// <param name="version">Version number. Can be null for latest version.</param>
-    [HttpGet("docs")]
+    [HttpGet("docs/{fileName}")]
     [AllowAnonymous]
-    public FileStreamResult GetDocumentationHtmlForVersion(string version = null)
+    public FileStreamResult GetDocumentationHtmlForVersion(string version = null, string fileName = null)
     {
         uint revision;
         if (string.IsNullOrEmpty(version))
@@ -347,16 +357,32 @@ public class NextGenController : ControllerBase
         else
             revision = ParseVersionString(version);
 
+        // No filename specified - default to index file.
+        if (string.IsNullOrEmpty(fileName))
+            fileName = "index.html";
+
         // Get the pull request corresponding to this release.
         uint pullRequest = GetPullRequestNumber(revision);
         string pullRequestString = pullRequest.ToString(CultureInfo.InvariantCulture);
 
         string baseDocsPath = EnvironmentVariable.Read(documentationPath, "Documentation path");
-        string filePath = Path.Combine(baseDocsPath, pullRequestString, "index.html");
+        string filePath = Path.Combine(baseDocsPath, pullRequestString, fileName);
 
         // The stream will be closed by the FileStreamResult internally.
         FileStream stream = System.IO.File.OpenRead(filePath);
-        return new FileStreamResult(stream, "text/html; charset=utf-8");
+        string contentType = GetContentType(fileName);
+        return new FileStreamResult(stream, $"{contentType}; charset=utf-8");
+    }
+
+    /// <summary>
+    /// Get the content type of a file.
+    /// </summary>
+    /// <param name="fileName">File name/path.</param>
+    private string GetContentType(string fileName)
+    {
+        if (Path.GetExtension(fileName) == ".pdf")
+            return "application/pdf";
+        return "text/html";
     }
 
     /// <summary>
