@@ -423,7 +423,17 @@ public class NextGenController : ControllerBase
     /// </summary>
     [HttpGet("nextversion")]
     [AllowAnonymous]
-    public uint GetNextRevisionNumber(INextGenDbContext context)
+    public uint GetNextRevisionNumber()
+    {
+        using (INextGenDbContext context = generator.GenerateDbContext())
+            return GetNextRevisionNumber(context);
+    }
+
+    /// <summary>
+    /// Get the next revision number.
+    /// </summary>
+    /// <param name="context">The DB context.</param>
+    private uint GetNextRevisionNumber(INextGenDbContext context)
     {
         return GetLatestRevision(context) + 1;
     }
