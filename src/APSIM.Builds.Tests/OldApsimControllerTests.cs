@@ -91,14 +91,11 @@ public class OldApsimControllerTests
         mockGithub.SetupPullRequest(pullRequestId, pullRequest);
 
         // Add a new build to the DB.
-        IActionResult result = await controller.AddBuildAsync(pullRequestId, jenkinsId);
-
-        // Ensure we get an Ok (HTTP 200) result.
-        Assert.IsType<OkObjectResult>(result);
+        int result = await controller.AddBuildAsync(pullRequestId, jenkinsId);
 
         // Ensure the controller returned the ID of the new build.
         int expectedId = numExistingBuilds + 1;
-        Assert.Equal(expectedId, ((OkObjectResult)result).Value);
+        Assert.Equal(expectedId, result);
 
         // Ensure inserted data is correct.
         Build actual = dbContext.Builds.Last();
@@ -122,10 +119,7 @@ public class OldApsimControllerTests
     {
         // We haven't configured the github client for this pull request ID, so
         // in theory the controller should throw.
-        IActionResult result = await controller.AddBuildAsync(666, 0);
-
-        // Ensure response is a HTTP 400 (bad request) response.
-        Assert.IsType<BadRequestObjectResult>(result);
+        await Assert.ThrowsAsync<ArgumentException>(async () => await controller.AddBuildAsync(666, 0));
     }
 
     /// <summary>

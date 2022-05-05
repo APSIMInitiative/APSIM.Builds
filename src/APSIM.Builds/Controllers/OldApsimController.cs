@@ -60,11 +60,11 @@ public class OldApsimController : ControllerBase
     /// <param name="jenkinsId">ID of the build on Jenkins.</param>
     [HttpPost("add")]
     [Authorize]
-    public async Task<IActionResult> AddBuildAsync(uint pullRequestId, uint jenkinsId)
+    public async Task<int> AddBuildAsync(uint pullRequestId, uint jenkinsId)
     {
         PullRequestMetadata pr = await github.GetMetadataAsync(pullRequestId, owner, repo);
         if (pr == null)
-            return BadRequest($"Pull request {pullRequestId} does not exist on {owner}/{repo}");
+            throw new ArgumentException($"Pull request {pullRequestId} does not exist on {owner}/{repo}");
 
         Build build = new Build();
         build.Author = pr.Author;
@@ -77,8 +77,30 @@ public class OldApsimController : ControllerBase
         {
             EntityEntry<Build> entry = await db.Builds.AddAsync(build);
             await db.SaveChangesAsync();
-            return Ok(entry.Entity.Id);
+            return entry.Entity.Id;
         }
+    }
+
+    /// <summary>
+    /// Update a job's num diffs.
+    /// </summary>
+    /// <param name="number">ID of the job.</param>
+    /// <param name="pass">True if the build passed. False otherwise.</param>
+    [HttpGet("setnumdiffs")]
+    [Authorize]
+    public async Task<IActionResult> UpdateBuildAsync(uint jobID, uint numDiffs)
+    {
+        using (IOldApsimDbContext db = generator.GenerateDbContext())
+        {
+            Build build = await db.Builds.FindAsync((int)jobID);
+            if (build == null)
+                return BadRequest($"No build exists with ID {jobID}");
+
+            build.NumDiffs = numDiffs;
+
+            await db.SaveChangesAsync();
+        }
+        return Ok();
     }
 
     /// <summary>
