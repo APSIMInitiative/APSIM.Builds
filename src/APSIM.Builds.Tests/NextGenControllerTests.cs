@@ -142,7 +142,7 @@ public class NextGenControllerTests
     public async Task TestGetNextRevisionNumber(uint latestRevision)
     {
         await AddUpgrade(new Upgrade(1, DateTime.Now, 1, 2, "", "", latestRevision));
-        uint nextRevision = controller.GetNextRevisionNumber(dbContext);
+        uint nextRevision = controller.GetNextRevisionNumber();
         Assert.Equal(latestRevision + 1, nextRevision);
     }
 
@@ -152,7 +152,7 @@ public class NextGenControllerTests
     [Fact]
     public void TestGetFirstRevisionNumber()
     {
-        uint revision = controller.GetNextRevisionNumber(dbContext);
+        uint revision = controller.GetNextRevisionNumber();
         Assert.Equal(1u, revision);
     }
 
