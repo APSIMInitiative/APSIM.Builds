@@ -69,10 +69,10 @@ public class OldApsimController : ControllerBase
         Build build = new Build();
         build.Author = pr.Author;
         build.Title = pr.Issue.Title;
-        build.BugID = pr.Issue.Number;
+        build.BugID = (int)pr.Issue.Number;
         build.StartTime = DateTime.Now;
-        build.JenkinsID = jenkinsId;
-        build.PullRequestID = pullRequestId;
+        build.JenkinsID = (int)jenkinsId;
+        build.PullRequestID = (int)pullRequestId;
         using (IOldApsimDbContext db = generator.GenerateDbContext())
         {
             EntityEntry<Build> entry = await db.Builds.AddAsync(build);
@@ -96,7 +96,7 @@ public class OldApsimController : ControllerBase
             if (build == null)
                 return BadRequest($"No build exists with ID {jobID}");
 
-            build.NumDiffs = numDiffs;
+            build.NumDiffs = (int)numDiffs;
 
             await db.SaveChangesAsync();
         }
@@ -163,7 +163,7 @@ public class OldApsimController : ControllerBase
             if (existing != null)
                 return BadRequest($"Revision number {revision} already allocated to build {existing.Id} ({existing.Title})");
 
-            build.RevisionNumber = revision;
+            build.RevisionNumber = (int)revision;
             await db.SaveChangesAsync();
         }
         return Ok();

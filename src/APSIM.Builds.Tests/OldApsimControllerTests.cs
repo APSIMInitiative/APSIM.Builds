@@ -103,11 +103,11 @@ public class OldApsimControllerTests
         Assert.Equal(expectedId, actual.Id);
         Assert.Equal(pullRequest.Author, actual.Author);
         Assert.Equal(pullRequest.Issue.Title, actual.Title);
-        Assert.Equal(pullRequest.Issue.Number, actual.BugID);
+        Assert.Equal(pullRequest.Issue.Number, (uint)actual.BugID);
         Assert.Equal(DateTime.Now.Date, actual.StartTime.Date);
         Assert.Null(actual.FinishTime);
-        Assert.Equal(jenkinsId, actual.JenkinsID);
-        Assert.Equal(pullRequestId, actual.PullRequestID);
+        Assert.Equal(jenkinsId, (uint)actual.JenkinsID);
+        Assert.Equal(pullRequestId, (uint)actual.PullRequestID);
     }
 
     /// <summary>
@@ -214,7 +214,7 @@ public class OldApsimControllerTests
         build.BugID = 2;
         build.StartTime = DateTime.Now;
         build.JenkinsID = 15;
-        build.PullRequestID = pullRequestId;
+        build.PullRequestID =(int)pullRequestId;
 
         // Add N builds to the DB.
         for (int i = 0; i < numBuildsToAdd; i++)
@@ -236,7 +236,7 @@ public class OldApsimControllerTests
         for (int i = 0; i < numBuildsToAdd; i++)
         {
             uint? expectedRevision = i == numBuildsToAdd - 1 ? revision : null;
-            Assert.Equal(expectedRevision, buildsInDb[i].RevisionNumber);
+            Assert.Equal(expectedRevision, (uint)buildsInDb[i].RevisionNumber);
         }
     }
 
@@ -275,7 +275,7 @@ public class OldApsimControllerTests
 
         // Ensure the build was not modified.
         Build build = dbContext.Builds.Last();
-        Assert.Equal(1u, build.RevisionNumber);
+        Assert.Equal(1u, (uint)build.RevisionNumber);
     }
 
     /// <summary>
@@ -291,12 +291,12 @@ public class OldApsimControllerTests
             Build build = new Build();
             build.Author = $"Author {i}";
             build.Title = $"Build {i}";
-            build.BugID = 1000u + i;
+            build.BugID = 1000 + i;
             build.StartTime = DateTime.Today.AddDays(-1).Date;
             build.FinishTime = DateTime.Today.Date;
             build.RevisionNumber = i;
-            build.JenkinsID = 2000u + i;
-            build.PullRequestID = 3000u + i;
+            build.JenkinsID = 2000 + i;
+            build.PullRequestID = 3000 + i;
 
             Build inserted = await AddBuild(build);
             builds.Add(inserted);
