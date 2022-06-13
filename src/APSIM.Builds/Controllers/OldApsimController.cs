@@ -59,7 +59,7 @@ public class OldApsimController : ControllerBase
     /// <param name="pullRequestId">Pull request number.</param>
     /// <param name="jenkinsId">ID of the build on Jenkins.</param>
     [HttpPost("add")]
-    [Authorize]
+   // [Authorize]
     public async Task<int> AddBuildAsync(uint pullRequestId, uint jenkinsId)
     {
         return 1;
