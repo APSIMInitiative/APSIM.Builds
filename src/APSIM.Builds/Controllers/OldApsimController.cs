@@ -62,7 +62,8 @@ public class OldApsimController : ControllerBase
     [Authorize]
     public async Task<int> AddBuildAsync(uint pullRequestId, uint jenkinsId)
     {
-        PullRequestMetadata pr = await github.GetMetadataAsync(pullRequestId, owner, repo);
+        return 1;
+        /*PullRequestMetadata pr = await github.GetMetadataAsync(pullRequestId, owner, repo);
         if (pr == null)
             throw new ArgumentException($"Pull request {pullRequestId} does not exist on {owner}/{repo}");
 
@@ -78,7 +79,7 @@ public class OldApsimController : ControllerBase
             EntityEntry<Build> entry = await db.Builds.AddAsync(build);
             await db.SaveChangesAsync();
             return entry.Entity.Id;
-        }
+        }*/
     }
 
     /// <summary>
