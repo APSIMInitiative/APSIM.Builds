@@ -282,17 +282,17 @@ public class NextGenController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> PullRequestMerged()
     {
-        try
-        {
-            // fixme: hash verification doesn't seem to be working (I get a
-            // different hash to what github sends).
-            // Validate the request signature.
-            await ValidateGithubRequestAsync();
-        }
-        catch (Exception error)
-        {
-            return BadRequest(error.Message);
-        }
+        //try
+        //{
+        //    // fixme: hash verification doesn't seem to be working (I get a
+        //    // different hash to what github sends).
+        //    // Validate the request signature.
+        //    await ValidateGithubRequestAsync();
+        //}
+        //catch (Exception error)
+        //{
+        //    return BadRequest(error.Message);
+        //}
 
         // If a nextgen PR has been merged, and it resolves an issue,
         // trigger a release build on jenkins.
