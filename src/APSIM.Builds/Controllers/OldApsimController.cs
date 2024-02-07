@@ -4,8 +4,12 @@ using APSIM.Builds.VersionControl;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Octokit.Internal;
+using Octokit;
 using System;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace APSIM.Builds.Controllers;
@@ -26,6 +30,17 @@ public class OldApsimController : ControllerBase
     /// Name of the old apsim repo on github.
     /// </summary>
     private const string repo = "APSIMClassic";
+
+    /// <summary>
+    /// Environment variable containing the URL of the jenkins server.
+    /// </summary>
+    private const string jenkinsUrl = "JENKINS_URL";
+
+    /// <summary>
+    /// Environment variable containing the token used to remotely start an
+    /// apsim-release job on the jenkins server.
+    /// </summary>
+    private const string jenkinsToken = "JENKINS_TOKEN_CLASSIC";
 
     /// <summary>
     /// DB context generator. We use a new DB context instance for each
@@ -167,5 +182,66 @@ public class OldApsimController : ControllerBase
             await db.SaveChangesAsync();
         }
         return Ok();
+    }
+
+
+    /// <summary>
+    /// Called when a pull request is merged on github. Triggers a CI build
+    /// on jenkins if the pull request resolved an issue.
+    /// 
+    /// This is invoked by a github webhook.
+    /// </summary>
+    [HttpPost("webhook")]
+    [AllowAnonymous]
+    public async Task<IActionResult> PullRequestMerged()
+    {
+        //try
+        //{
+        //    // fixme: hash verification doesn't seem to be working (I get a
+        //    // different hash to what github sends).
+        //    // Validate the request signature.
+        //    await ValidateGithubRequestAsync();
+        //}
+        //catch (Exception error)
+        //{
+        //    return BadRequest(error.Message);
+        //}
+
+        // If a nextgen PR has been merged, and it resolves an issue,
+        // trigger a release build on jenkins.
+        using (StreamReader reader = new StreamReader(Request.Body))
+        {
+            string json = await reader.ReadToEndAsync();
+            if (string.IsNullOrEmpty(json))
+                return BadRequest("Empty payload");
+
+            SimpleJsonSerializer serializer = new SimpleJsonSerializer();
+            PullRequestEventPayload payload = serializer.Deserialize<PullRequestEventPayload>(json);
+            if (payload == null || payload.PullRequest == null)
+                return BadRequest("Payload does not contain a pull request");
+
+            if (!payload.PullRequest.Merged)
+                return Ok("Ignored: pull request is not merged");
+
+            GitHub githubClient = new GitHub();
+            PullRequestMetadata pr = await githubClient.GetMetadataAsync((uint)payload.PullRequest.Number, owner, repo);
+            if (!pr.ResolvesIssue)
+                return Ok("Ignored: pull request does not resolve an issue");
+
+            string jenkinsUrlBase = EnvironmentVariable.Read(jenkinsUrl, "Jenkins URL");
+            string token = EnvironmentVariable.Read(jenkinsToken, "Jenkins apsim-release remote execution token");
+
+            // todo: figure out if all of these parameters are actually
+            // used by the build scripts. If not, remove them.
+            string url = $"{jenkinsUrlBase}/job/oldapsim-release/buildWithParameters";
+            string parameters = $"?token={token}&PULL_ID={payload.PullRequest.Number}&COMMIT_AUTHOR={payload.PullRequest.User.Login}&ISSUE_TITLE={pr.Issue.Title}&RELEASED=true&MERGE_COMMIT={payload.PullRequest.MergeCommitSha}";
+
+            HttpClient client = new HttpClient();
+            client.BaseAddress = new Uri(url);
+            HttpResponseMessage response = await client.GetAsync(parameters);
+            response.EnsureSuccessStatusCode();
+
+            return Ok("Initiated a release build of apsim");
+        }
     }
 }
