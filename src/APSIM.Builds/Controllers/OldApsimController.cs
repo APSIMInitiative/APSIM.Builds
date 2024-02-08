@@ -149,7 +149,7 @@ public class OldApsimController : ControllerBase
     {
         using (IOldApsimDbContext db = generator.GenerateDbContext())
         {
-            Build latest = await db.Builds.ToAsyncEnumerable().LastOrDefaultAsync();
+            Build latest = await db.Builds.ToAsyncEnumerable().LastOrDefaultAsync(r => r.RevisionNumber != null);
             if (latest == null)
                 // No builds in DB. Revision numbers start at 0.
                 return Ok(0u);
