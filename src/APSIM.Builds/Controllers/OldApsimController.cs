@@ -145,17 +145,17 @@ public class OldApsimController : ControllerBase
     /// Get the latest revision number.
     /// </summary>
     [HttpPost("getrevision")]
-    public async Task<IActionResult> GetLatestRevisionNumberAsync()
+    public uint? GetLatestRevisionNumberAsync()
     {
         using (IOldApsimDbContext db = generator.GenerateDbContext())
         {
 
-            Build latest = await db.Builds.ToAsyncEnumerable().LastOrDefaultAsync(r => r.RevisionNumber is int);
-            if (latest == null)
+            var revisionNumber = db.Builds.Max(u => u.RevisionNumber);
+            if (revisionNumber == null)
                 // No builds in DB. Revision numbers start at 0.
-                return Ok(0u);
+                return 0;
 
-            return Ok(latest.RevisionNumber);
+            return Convert.ToUInt32(revisionNumber);
         }
     }
 
