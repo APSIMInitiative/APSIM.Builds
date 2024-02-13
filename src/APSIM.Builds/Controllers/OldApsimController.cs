@@ -257,7 +257,7 @@ public class OldApsimController : ControllerBase
     {
         using (IOldApsimDbContext db = generator.GenerateDbContext())
         {
-            IAsyncEnumerable<Build> result = db.Builds.ToAsyncEnumerable();
+            IAsyncEnumerable<Build> result = db.Builds.Where(b => b.RevisionNumber != null && b.Pass).ToAsyncEnumerable();
             result = result.OrderByDescending(u => u.RevisionNumber);
             if (n > 0)
                 result = result.Take(n);
