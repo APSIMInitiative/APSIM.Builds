@@ -29,7 +29,7 @@ public class Build
     /// the old bug tracker website. For newer builds, this
     /// will be a github issue number.
     /// </remarks>
-    public int BugID { get; set; }
+    public uint BugID { get; set; }
 
     /// <summary>
     /// Did the build pass?

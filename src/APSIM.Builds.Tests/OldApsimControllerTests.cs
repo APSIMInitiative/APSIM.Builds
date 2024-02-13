@@ -286,7 +286,7 @@ public class OldApsimControllerTests
             Build build = new Build();
             build.Author = $"Author {i}";
             build.Title = $"Build {i}";
-            build.BugID = 1000 + i;
+            build.BugID = (uint) 1000 + i;
             build.StartTime = DateTime.Today.AddDays(-1).Date;
             build.FinishTime = DateTime.Today.Date;
             build.RevisionNumber = i;

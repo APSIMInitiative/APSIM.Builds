@@ -85,7 +85,7 @@ public class OldApsimController : ControllerBase
         Build build = new Build();
         build.Author = pr.Author;
         build.Title = pr.Issue.Title;
-        build.BugID = (int)pr.Issue.Number;
+        build.BugID = (uint)pr.Issue.Number;
         build.StartTime = DateTime.Now;
         build.JenkinsID = (int)jenkinsId;
         build.PullRequestID = (int)pullRequestId;
