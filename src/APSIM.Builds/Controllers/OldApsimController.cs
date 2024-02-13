@@ -12,6 +12,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
 namespace APSIM.Builds.Controllers;
 
@@ -254,18 +255,19 @@ public class OldApsimController : ControllerBase
     /// <param name="n">Number of upgrades to fetch, -1 for unlimited.</param>
     [HttpPost("list")]
     [AllowAnonymous]
-    public IEnumerable<Build> List(int n = -1)
+    public async Task<IEnumerable<Build>> List(int n = -1)
     {
         using (IOldApsimDbContext db = generator.GenerateDbContext())
         {
-            return db.Builds.Take(1);
+            IAsyncEnumerable<Build> result = db.Builds.ToAsyncEnumerable();
+            result = result.Take(1);
 
             //IAsyncEnumerable<Build> result = db.Builds.Where(b => b.RevisionNumber != null && 
             //                                                      b.Pass).ToAsyncEnumerable();
             //result = result.OrderByDescending(u => u.RevisionNumber);
             //if (n > 0)
             //    result = result.Take(n);
-            //return await result.ToListAsync();
+            return await result.ToListAsync();
         }
     }
 }
