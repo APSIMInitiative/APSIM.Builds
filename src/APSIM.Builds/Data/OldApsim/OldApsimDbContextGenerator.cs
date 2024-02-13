@@ -17,10 +17,6 @@ public class OldApsimDbContextGenerator : IOldApsimDbContextGenerator
     public IOldApsimDbContext GenerateDbContext()
     {
         string connectionString = EnvironmentVariable.Read(connectionStringVariable, "Old APSIM DB connection string");
-        connectionString = connectionString.Replace("$MARIADB_USERNAME", "root")
-                                           .Replace("$MARIADB_PASSWORD", "3sRz9DkbwStCGbXUeKLQSlVlTG9Qhd6x")
-                                           .Replace("\"", "");
-
         var builder = new DbContextOptionsBuilder().UseLazyLoadingProxies().UseMySQL(connectionString);
 
         OldApsimDbContext context = new OldApsimDbContext(builder.Options);
