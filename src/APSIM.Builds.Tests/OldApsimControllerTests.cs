@@ -180,12 +180,7 @@ public class OldApsimControllerTests
         await PopulateDB(numExistingBuilds);
 
         // Get the next revision number.
-        IActionResult result = await controller.GetLatestRevisionNumberAsync();
-
-        // Ensure the result is a HTTP 200 (OK) response.
-        Assert.IsType<OkObjectResult>(result);
-
-        object responseValue = ((OkObjectResult)result).Value;
+        uint? responseValue = controller.GetLatestRevisionNumberAsync();
 
         // PopulateDB() will create N builds with revision numbers 0..N.
         uint expectedRevisionNumber = numExistingBuilds == 0 ? 0 : numExistingBuilds - 1u;
