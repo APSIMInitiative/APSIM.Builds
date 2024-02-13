@@ -254,7 +254,7 @@ public class OldApsimController : ControllerBase
     /// <param name="n">Number of upgrades to fetch, -1 for unlimited.</param>
     [HttpPost("list")]
     [AllowAnonymous]
-    public async Task<IEnumerable<int>> List(int n = -1)
+    public async Task<IEnumerable<Build>> List(int n = -1)
     {
         using (IOldApsimDbContext db = generator.GenerateDbContext())
         {
@@ -263,7 +263,7 @@ public class OldApsimController : ControllerBase
             result = result.OrderByDescending(u => u.RevisionNumber);
             if (n > 0)
                 result = result.Take(n);
-            return await result.Select(b => b.Id).ToListAsync();
+            return await result.ToListAsync();
         }
     }
 }
