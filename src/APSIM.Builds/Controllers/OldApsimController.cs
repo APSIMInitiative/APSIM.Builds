@@ -247,21 +247,23 @@ public class OldApsimController : ControllerBase
         }
     }
 
+
     /// <summary>
     /// Enumerate the available upgrades.
     /// </summary>
     /// <param name="n">Number of upgrades to fetch, -1 for unlimited.</param>
     [HttpPost("list")]
     [AllowAnonymous]
-    public async Task<IEnumerable<Build>> List(int n = -1)
+    public async Task<IEnumerable<int>> List(int n = -1)
     {
         using (IOldApsimDbContext db = generator.GenerateDbContext())
         {
-            IAsyncEnumerable<Build> result = db.Builds.Where(b => b.RevisionNumber != null && b.Pass).ToAsyncEnumerable();
+            IAsyncEnumerable<Build> result = db.Builds.Where(b => b.RevisionNumber != null && 
+                                                                  b.Pass).ToAsyncEnumerable();
             result = result.OrderByDescending(u => u.RevisionNumber);
             if (n > 0)
                 result = result.Take(n);
-            return await result.ToListAsync();
+            return await result.Select(b => b.Id).ToListAsync();
         }
     }
 }
