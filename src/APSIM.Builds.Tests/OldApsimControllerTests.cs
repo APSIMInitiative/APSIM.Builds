@@ -91,10 +91,10 @@ public class OldApsimControllerTests
         mockGithub.SetupPullRequest(pullRequestId, pullRequest);
 
         // Add a new build to the DB.
-        int result = await controller.AddBuildAsync(pullRequestId, jenkinsId);
+        uint result = await controller.AddBuildAsync(pullRequestId, jenkinsId);
 
         // Ensure the controller returned the ID of the new build.
-        int expectedId = numExistingBuilds + 1;
+        uint expectedId = (uint)numExistingBuilds + 1;
         Assert.Equal(expectedId, result);
 
         // Ensure inserted data is correct.
@@ -209,10 +209,10 @@ public class OldApsimControllerTests
         build.BugID = 2;
         build.StartTime = DateTime.Now;
         build.JenkinsID = 15;
-        build.PullRequestID =(int)pullRequestId;
+        build.PullRequestID =(uint)pullRequestId;
 
         // Add N builds to the DB.
-        for (int i = 0; i < numBuildsToAdd; i++)
+        for (uint i = 0; i < numBuildsToAdd; i++)
         {
             build.Id = i + 1;
             await AddBuild(build);
@@ -291,7 +291,7 @@ public class OldApsimControllerTests
             build.FinishTime = DateTime.Today.Date;
             build.RevisionNumber = i;
             build.JenkinsID = (uint)2000 + i;
-            build.PullRequestID = 3000 + i;
+            build.PullRequestID = (uint)3000 + i;
 
             Build inserted = await AddBuild(build);
             builds.Add(inserted);

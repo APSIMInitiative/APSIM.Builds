@@ -77,7 +77,7 @@ public class OldApsimController : ControllerBase
     /// <param name="jenkinsId">ID of the build on Jenkins.</param>
     [HttpPost("add")]
     [Authorize]
-    public async Task<int> AddBuildAsync(uint pullRequestId, uint jenkinsId)
+    public async Task<uint> AddBuildAsync(uint pullRequestId, uint jenkinsId)
     {
         PullRequestMetadata pr = await github.GetMetadataAsync(pullRequestId, owner, repo);
         if (pr == null)
@@ -89,7 +89,7 @@ public class OldApsimController : ControllerBase
         build.BugID = (uint)pr.Issue.Number;
         build.StartTime = DateTime.Now;
         build.JenkinsID = (uint)jenkinsId;
-        build.PullRequestID = (int)pullRequestId;
+        build.PullRequestID = (uint)pullRequestId;
         using (IOldApsimDbContext db = generator.GenerateDbContext())
         {
             EntityEntry<Build> entry = await db.Builds.AddAsync(build);
@@ -113,7 +113,7 @@ public class OldApsimController : ControllerBase
             if (build == null)
                 return BadRequest($"No build exists with ID {jobID}");
 
-            build.NumDiffs = (int)numDiffs;
+            build.NumDiffs = (uint)numDiffs;
 
             await db.SaveChangesAsync();
         }
@@ -181,7 +181,7 @@ public class OldApsimController : ControllerBase
             if (existing != null)
                 return BadRequest($"Revision number {revision} already allocated to build {existing.Id} ({existing.Title})");
 
-            build.RevisionNumber = (int)revision;
+            build.RevisionNumber = (uint)revision;
             await db.SaveChangesAsync();
         }
         return Ok();
