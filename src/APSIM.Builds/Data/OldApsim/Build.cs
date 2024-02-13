@@ -9,7 +9,7 @@ public class Build
     /// <summary>
     /// Build ID.
     /// </summary>
-    public uint Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// Patch/build author.
@@ -29,7 +29,7 @@ public class Build
     /// the old bug tracker website. For newer builds, this
     /// will be a github issue number.
     /// </remarks>
-    public uint BugID { get; set; }
+    public long BugID { get; set; }
 
     /// <summary>
     /// Did the build pass?
@@ -51,13 +51,13 @@ public class Build
     /// Number of diffs in this build.
     /// This will be null if the build has not finished running.
     /// </summary>
-    public uint? NumDiffs { get; set; }
+    public int? NumDiffs { get; set; }
 
     /// <summary>
     /// Revision number of this build. This will be null if the build
     /// has not finished running.
     /// </summary>
-    public uint? RevisionNumber { get; set; }
+    public int? RevisionNumber { get; set; }
 
     /// <summary>
     /// If this job was built on jenkins, this will be the ID
@@ -67,11 +67,11 @@ public class Build
     /// <remarks>
     /// This is used to provide a link to the job on the builds page.
     /// </remarks>
-    public uint JenkinsID { get; set; }
+    public long JenkinsID { get; set; }
 
     /// <summary>
     /// Number/ID of the pull request which triggered this build.
     /// This will be null for builds which ran on bob.
     /// </summary>
-    public uint? PullRequestID { get; set; }
+    public int? PullRequestID { get; set; }
 }

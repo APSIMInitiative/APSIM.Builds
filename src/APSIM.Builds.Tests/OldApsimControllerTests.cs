@@ -91,10 +91,10 @@ public class OldApsimControllerTests
         mockGithub.SetupPullRequest(pullRequestId, pullRequest);
 
         // Add a new build to the DB.
-        uint result = await controller.AddBuildAsync(pullRequestId, jenkinsId);
+        int result = await controller.AddBuildAsync(pullRequestId, jenkinsId);
 
         // Ensure the controller returned the ID of the new build.
-        uint expectedId = (uint)numExistingBuilds + 1;
+        int expectedId = numExistingBuilds + 1;
         Assert.Equal(expectedId, result);
 
         // Ensure inserted data is correct.
@@ -209,10 +209,10 @@ public class OldApsimControllerTests
         build.BugID = 2;
         build.StartTime = DateTime.Now;
         build.JenkinsID = 15;
-        build.PullRequestID =(uint)pullRequestId;
+        build.PullRequestID =(int)pullRequestId;
 
         // Add N builds to the DB.
-        for (uint i = 0; i < numBuildsToAdd; i++)
+        for (int i = 0; i < numBuildsToAdd; i++)
         {
             build.Id = i + 1;
             await AddBuild(build);
@@ -286,12 +286,12 @@ public class OldApsimControllerTests
             Build build = new Build();
             build.Author = $"Author {i}";
             build.Title = $"Build {i}";
-            build.BugID = (uint) 1000 + i;
+            build.BugID = 1000 + i;
             build.StartTime = DateTime.Today.AddDays(-1).Date;
             build.FinishTime = DateTime.Today.Date;
             build.RevisionNumber = i;
-            build.JenkinsID = (uint)2000 + i;
-            build.PullRequestID = (uint)3000 + i;
+            build.JenkinsID = 2000 + i;
+            build.PullRequestID = 3000 + i;
 
             Build inserted = await AddBuild(build);
             builds.Add(inserted);
@@ -317,5 +317,26 @@ public class OldApsimControllerTests
     {
         IssueMetadata issue = new IssueMetadata(12, "issuetitle", "url");
         return new PullRequestMetadata(issue, true, "a s d f", "zyx");
+    }
+
+
+
+    
+    [Fact]
+    public async Task TestList()
+    {
+        var generator = new OldApsimDbContextGenerator();
+        var db = generator.GenerateDbContext();
+
+        IAsyncEnumerable<Build> result = db.Builds.Where(b => b.RevisionNumber != null && 
+                                                              b.Pass).ToAsyncEnumerable();
+        result = result.OrderByDescending(u => u.RevisionNumber);
+        //if (n > 0)
+        //    result = result.Take(n);
+        var list = await result.ToListAsync();
+        foreach (var i in list)
+        {
+
+        }
     }
 }

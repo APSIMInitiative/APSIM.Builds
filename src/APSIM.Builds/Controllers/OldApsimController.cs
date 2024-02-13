@@ -12,7 +12,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
 
 namespace APSIM.Builds.Controllers;
 
@@ -77,7 +76,7 @@ public class OldApsimController : ControllerBase
     /// <param name="jenkinsId">ID of the build on Jenkins.</param>
     [HttpPost("add")]
     [Authorize]
-    public async Task<uint> AddBuildAsync(uint pullRequestId, uint jenkinsId)
+    public async Task<int> AddBuildAsync(uint pullRequestId, uint jenkinsId)
     {
         PullRequestMetadata pr = await github.GetMetadataAsync(pullRequestId, owner, repo);
         if (pr == null)
@@ -86,10 +85,10 @@ public class OldApsimController : ControllerBase
         Build build = new Build();
         build.Author = pr.Author;
         build.Title = pr.Issue.Title;
-        build.BugID = (uint)pr.Issue.Number;
+        build.BugID = (int)pr.Issue.Number;
         build.StartTime = DateTime.Now;
-        build.JenkinsID = (uint)jenkinsId;
-        build.PullRequestID = (uint)pullRequestId;
+        build.JenkinsID = (int)jenkinsId;
+        build.PullRequestID = (int)pullRequestId;
         using (IOldApsimDbContext db = generator.GenerateDbContext())
         {
             EntityEntry<Build> entry = await db.Builds.AddAsync(build);
@@ -113,7 +112,7 @@ public class OldApsimController : ControllerBase
             if (build == null)
                 return BadRequest($"No build exists with ID {jobID}");
 
-            build.NumDiffs = (uint)numDiffs;
+            build.NumDiffs = (int)numDiffs;
 
             await db.SaveChangesAsync();
         }
@@ -181,7 +180,7 @@ public class OldApsimController : ControllerBase
             if (existing != null)
                 return BadRequest($"Revision number {revision} already allocated to build {existing.Id} ({existing.Title})");
 
-            build.RevisionNumber = (uint)revision;
+            build.RevisionNumber = (int)revision;
             await db.SaveChangesAsync();
         }
         return Ok();
@@ -248,7 +247,6 @@ public class OldApsimController : ControllerBase
         }
     }
 
-
     /// <summary>
     /// Enumerate the available upgrades.
     /// </summary>
@@ -259,14 +257,10 @@ public class OldApsimController : ControllerBase
     {
         using (IOldApsimDbContext db = generator.GenerateDbContext())
         {
-            IAsyncEnumerable<Build> result = db.Builds.ToAsyncEnumerable();
-            result = result.Take(1);
-
-            //IAsyncEnumerable<Build> result = db.Builds.Where(b => b.RevisionNumber != null && 
-            //                                                      b.Pass).ToAsyncEnumerable();
-            //result = result.OrderByDescending(u => u.RevisionNumber);
-            //if (n > 0)
-            //    result = result.Take(n);
+            IAsyncEnumerable<Build> result = db.Builds.Where(b => b.RevisionNumber != null && b.Pass).ToAsyncEnumerable();
+            result = result.OrderByDescending(u => u.RevisionNumber);
+            if (n > 0)
+                result = result.Take(n);
             return await result.ToListAsync();
         }
     }
