@@ -290,7 +290,7 @@ public class OldApsimControllerTests
             build.StartTime = DateTime.Today.AddDays(-1).Date;
             build.FinishTime = DateTime.Today.Date;
             build.RevisionNumber = i;
-            build.JenkinsID = 2000 + i;
+            build.JenkinsID = (uint)2000 + i;
             build.PullRequestID = 3000 + i;
 
             Build inserted = await AddBuild(build);

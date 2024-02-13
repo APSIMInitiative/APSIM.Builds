@@ -87,7 +87,7 @@ public class OldApsimController : ControllerBase
         build.Title = pr.Issue.Title;
         build.BugID = (uint)pr.Issue.Number;
         build.StartTime = DateTime.Now;
-        build.JenkinsID = (int)jenkinsId;
+        build.JenkinsID = (uint)jenkinsId;
         build.PullRequestID = (int)pullRequestId;
         using (IOldApsimDbContext db = generator.GenerateDbContext())
         {

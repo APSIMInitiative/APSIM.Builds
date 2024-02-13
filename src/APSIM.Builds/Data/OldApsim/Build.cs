@@ -67,7 +67,7 @@ public class Build
     /// <remarks>
     /// This is used to provide a link to the job on the builds page.
     /// </remarks>
-    public int JenkinsID { get; set; }
+    public uint JenkinsID { get; set; }
 
     /// <summary>
     /// Number/ID of the pull request which triggered this build.
