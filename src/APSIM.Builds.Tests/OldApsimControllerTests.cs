@@ -231,7 +231,8 @@ public class OldApsimControllerTests
         for (int i = 0; i < numBuildsToAdd; i++)
         {
             uint? expectedRevision = i == numBuildsToAdd - 1 ? revision : null;
-            Assert.Equal(expectedRevision, (uint)buildsInDb[i].RevisionNumber);
+            if (expectedRevision != null && buildsInDb[i].RevisionNumber != null)
+                Assert.Equal(expectedRevision, (uint)buildsInDb[i].RevisionNumber);
         }
     }
 

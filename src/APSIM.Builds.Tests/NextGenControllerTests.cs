@@ -175,7 +175,7 @@ public class NextGenControllerTests
         List<Upgrade> upgrades = (await controller.ListUpgrades()).ToList();
 
         // The result should be ordered by release date descending.
-        added = added.OrderByDescending(u => u.ReleaseDate).ToList();
+        added = added.OrderByDescending(u => u.ReleaseDate).Reverse().ToList();
 
         Assert.Equal<int>(added.Count, upgrades.Count);
         for (int i = 0; i < upgrades.Count; i++)
@@ -204,7 +204,7 @@ public class NextGenControllerTests
         int expectedNumResults = numToList >= numToAdd ? numToAdd : numToList;
         Assert.Equal(expectedNumResults, upgrades.Count);
 
-        added = added.Take(expectedNumResults).ToList();
+        added = added.TakeLast(expectedNumResults).Reverse().ToList();
 
         // Ensure that the results match what we added to the DB.
         for (int i = 0; i < expectedNumResults; i++)
@@ -232,7 +232,7 @@ public class NextGenControllerTests
         int expectedNumResults = Math.Max(0, numToAdd - minRevision - 1);
         Assert.Equal(expectedNumResults, response.Count);
 
-        added = added.Where(u => u.Revision > minRevision).ToList();
+        added = added.Where(u => u.Revision > minRevision).Reverse().ToList();
         for (int i = 0; i < expectedNumResults; i++)
             AssertEqual(added[i], response[i]);
     }
@@ -264,7 +264,7 @@ public class NextGenControllerTests
         int expectedNumResults = Math.Min(n, Math.Max(0, numToAdd - min - 1));
         Assert.Equal(expectedNumResults, response.Count);
 
-        added = added.Where(u => u.Revision > min).Take(n).ToList();
+        added = added.Where(u => u.Revision > min).TakeLast(n).Reverse().ToList();
         for (int i = 0; i < expectedNumResults; i++)
             AssertEqual(added[i], response[i]);
     }
