@@ -56,6 +56,11 @@ public class OldApsimController : ControllerBase
     private readonly IGitHub github;
 
     /// <summary>
+    /// Environment variable containing the path to the apsim installers.
+    /// </summary>
+    private const string installersPath = "INSTALLERS_PATH";
+
+    /// <summary>
     /// Create a new <see cref="OldApsimController"/> instance.
     /// </summary>
     /// <param name="dbContextGenerator">DB Context generator.</param>
@@ -263,6 +268,23 @@ public class OldApsimController : ControllerBase
                 result = result.Take(n);
             return await result.ToListAsync();
         }
+    }
+
+    /// <summary>Download an apsim classic installer.</summary>
+    /// <param name="revision">The revision string of apsim classic to be downloaded.</param>
+    [HttpGet("download/{revision}")]
+    public IActionResult DownloadApsimClassic(int revision)
+    {
+        string basePath = EnvironmentVariable.Read(installersPath, "Path to apsim installers");
+        string fileName = $"Apsim7.10-r{revision}.ApsimSetup.exe";
+
+        string filePath = Path.Combine(basePath, fileName);
+
+        Stream file = System.IO.File.OpenRead(filePath);
+        if (file == null)
+            return BadRequest("File not found");
+
+        return File(file, "application/octet-stream", fileName);
     }
 }
  
