@@ -240,6 +240,22 @@ public class NextGenController : ControllerBase
         return File(file, "application/octet-stream", fileName);
     }
 
+    /// <summary>Download an apsim classic installer.</summary>
+    /// <param name="revision">The revision string of apsim classic to be downloaded.</param>
+    [HttpGet("downloadclassic/{revision}")]
+    public IActionResult DownloadApsimClassic(string revision)
+    {
+        string basePath = EnvironmentVariable.Read(installersPath, "Path to apsim installers");
+        string fileName = GetClassicInstallerFileName(revision, Platform.Windows);
+        string filePath = Path.Combine(basePath, fileName);
+
+        Stream file = System.IO.File.OpenRead(filePath);
+        if (file == null)
+            return BadRequest("File not found");
+
+        return File(file, "application/octet-stream", fileName);
+    }
+
     /// <summary>
     /// Get the installer file name for the specified version and platform. Note
     /// that this method returns the file name only (not the path to the file).
@@ -250,6 +266,18 @@ public class NextGenController : ControllerBase
     {
         string ext = GetInstallerFileExtension(platform);
         return $"apsim-{revision}.{ext}";
+    }
+
+    /// <summary>
+    /// Get the installer file name for the specified version and platform. Note
+    /// that this method returns the file name only (not the path to the file).
+    /// </summary>
+    /// <param name="revision">Revision string of the desired version.</param>
+    /// <param name="platform">Target platform.</param>
+    private string GetClassicInstallerFileName(string revision, Platform platform)
+    {
+        string ext = GetInstallerFileExtension(platform);
+        return $"Apsim7.10-{revision}.{ext}";
     }
 
     /// <summary>
