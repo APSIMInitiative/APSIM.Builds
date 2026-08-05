@@ -14,3 +14,4 @@ ConsoleApplication1/
 .vs/
 **/bin/
 **/obj/
+.env
